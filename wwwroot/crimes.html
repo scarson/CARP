@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CARP // CRIMES LEDGER · OVERWHELMED EDITION</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IM+Fell+English:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --felt:        #1a1410;
+    --felt-deep:   #0d0907;
+    --felt-mid:    #14100c;
+    --paper:       #f0e6d2;
+    --paper-shade: #d9cdb1;
+    --paper-aged:  #e8dcc0;
+    --ink:         #2a1f15;
+    --ink-faded:   #5c4a35;
+    --ink-soft:    #7a6549;
+    --amber:       #ffb347;
+    --amber-bright:#ffd27f;
+    --amber-deep:  #c47a1c;
+    --amber-dim:   #8a5a18;
+    --blood:       #8b2c1c;
+    --stamp-red:   #a83228;
+    --green-crt:   #6fb86f;
+    --green-dim:   #3d6b3d;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--felt-deep);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 5%, rgba(196,122,28,0.10), transparent 45%),
+      radial-gradient(ellipse at 85% 95%, rgba(139,44,28,0.08), transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,179,71,0.02), transparent 60%),
+      var(--felt);
+    z-index: -2;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.18 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.55;
+    mix-blend-mode: overlay;
+  }
+
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.07) 3px, rgba(0,0,0,0) 4px
+    );
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  /* ============ HEADER ============ */
+  header {
+    border-bottom: 2px solid var(--amber-deep);
+    padding: 24px 40px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 24px;
+    position: relative;
+  }
+  header::before {
+    content: "CONFIDENTIAL · INTERNAL AFFAIRS · DO NOT DISTRIBUTE";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Special Elite', monospace;
+    font-size: 8px;
+    letter-spacing: 0.5em;
+    color: var(--blood);
+    opacity: 0.7;
+  }
+
+  .precinct-id {
+    font-family: 'Special Elite', monospace;
+    color: var(--amber);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+  .precinct-id .small { color: var(--ink-soft); display: block; font-size: 9px; margin-top: 4px; }
+  .precinct-id .badge {
+    display: inline-block;
+    border: 1px solid var(--amber);
+    padding: 2px 6px;
+    margin-top: 6px;
+    color: var(--amber-bright);
+    font-size: 9px;
+  }
+
+  h1 {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 52px;
+    margin: 0;
+    text-align: center;
+    color: var(--paper);
+    line-height: 0.95;
+    text-shadow: 0 0 30px rgba(255,179,71,0.2);
+  }
+  h1 .amp { color: var(--amber); font-style: normal; font-size: 0.7em; vertical-align: 0.1em; }
+  h1 small {
+    display: block;
+    font-family: 'Special Elite', monospace;
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--amber);
+    margin-top: 6px;
+  }
+
+  .clock {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--green-crt);
+    font-size: 11px;
+    line-height: 1.7;
+    text-shadow: 0 0 8px rgba(111,184,111,0.5);
+  }
+  .clock .label { color: var(--ink-soft); font-size: 9px; letter-spacing: 0.2em; }
+  .clock .blink { animation: blink 1.2s infinite step-end; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ============ VITALS ROW ============ */
+  .vitals {
+    display: grid;
+    grid-template-columns: 1.3fr repeat(5, 1fr);
+    gap: 1px;
+    background: var(--amber-deep);
+    margin: 18px 40px 0;
+    border: 1px solid var(--amber-deep);
+  }
+
+  .vital {
+    background: var(--felt-mid);
+    padding: 14px 18px;
+    position: relative;
+  }
+  .vital .label {
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    color: var(--amber);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .vital .value {
+    font-family: 'IM Fell English', serif;
+    font-size: 32px;
+    color: var(--paper);
+    line-height: 1;
+  }
+  .vital .sub {
+    font-size: 9px;
+    color: var(--ink-soft);
+    margin-top: 5px;
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+  }
+  .vital .delta-up   { color: var(--green-crt); }
+  .vital .delta-down { color: var(--blood); }
+
+  .mood-dial {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .dial { width: 64px; height: 64px; flex-shrink: 0; position: relative; }
+  .dial svg { width: 100%; height: 100%; overflow: visible; }
+  .dial .arc { stroke: var(--ink-soft); stroke-width: 2; fill: none; }
+  .dial .arc-active {
+    stroke: var(--amber); stroke-width: 3; fill: none;
+    filter: drop-shadow(0 0 4px rgba(255,179,71,0.6));
+  }
+  .dial .needle {
+    stroke: var(--blood); stroke-width: 2; stroke-linecap: round;
+    transform-origin: 35px 35px;
+    transition: transform 0.6s cubic-bezier(.5,1.8,.6,1);
+    filter: drop-shadow(0 0 3px rgba(139,44,28,0.8));
+  }
+  .dial .pivot { fill: var(--amber); }
+  .dial .tick { stroke: var(--ink-soft); stroke-width: 1; }
+
+  .mood-label {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--paper);
+  }
+  .mood-meta {
+    font-size: 9px;
+    color: var(--amber);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  /* ============ MAIN GRID ============ */
+  main {
+    display: grid;
+    grid-template-columns: 0.95fr 1.1fr 0.85fr;
+    gap: 22px;
+    padding: 24px 40px 36px;
+  }
+
+  .panel-title {
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--amber-deep);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .panel-title .meta {
+    color: var(--ink-soft);
+    letter-spacing: 0.12em;
+    font-size: 9px;
+  }
+
+  /* ====== LEDGER (denser) ====== */
+  .ledger-section { display: flex; flex-direction: column; }
+
+  .ledger {
+    flex: 1;
+    max-height: 920px;
+    overflow: hidden;
+    position: relative;
+  }
+  .ledger::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    background: linear-gradient(transparent, var(--felt-deep));
+    pointer-events: none;
+  }
+
+  .ledger-row {
+    display: grid;
+    grid-template-columns: 44px 64px 1fr auto;
+    gap: 10px;
+    padding: 8px 4px;
+    border-bottom: 1px dotted rgba(255,179,71,0.13);
+    font-size: 12px;
+    align-items: baseline;
+    cursor: pointer;
+    transition: background 0.2s;
+    animation: slideIn 0.4s ease-out;
+  }
+  .ledger-row:hover { background: rgba(255,179,71,0.06); }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .ledger-row .id {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--amber);
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .ledger-row .time {
+    color: var(--ink-soft);
+    font-size: 10px;
+  }
+  .ledger-row .confession {
+    color: var(--paper);
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .severity {
+    font-family: 'Special Elite', monospace;
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .severity.misdemeanor { color: #c4b896; }
+  .severity.felony      { color: var(--amber); }
+  .severity.high-crime  { color: var(--blood); border-color: var(--blood); }
+  .severity.simply-outrageous {
+    color: var(--paper);
+    background: var(--blood);
+    border-color: var(--blood);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(139,44,28,0.6); }
+    50%     { box-shadow: 0 0 0 5px rgba(139,44,28,0); }
+  }
+
+  /* ====== CASE FILES STACK (middle column) ====== */
+  .case-stack { position: relative; min-height: 920px; }
+
+  .case-file {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 28px 30px 24px;
+    position: relative;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.08),
+      0 18px 36px rgba(0,0,0,0.5),
+      0 4px 12px rgba(0,0,0,0.4);
+    background-image: repeating-linear-gradient(
+      transparent 0, transparent 24px,
+      rgba(92,74,53,0.07) 25px
+    );
+    background-size: 100% 26px;
+    margin-bottom: 22px;
+  }
+  .case-file:nth-child(1) { transform: rotate(-0.6deg); }
+  .case-file:nth-child(2) { transform: rotate(0.4deg); background-color: var(--paper-aged); }
+  .case-file:nth-child(3) { transform: rotate(-0.3deg); background-color: var(--paper-shade); }
+
+  .stamp {
+    position: absolute;
+    top: 14px;
+    right: -10px;
+    color: var(--stamp-red);
+    border: 3px solid var(--stamp-red);
+    padding: 5px 11px;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    transform: rotate(8deg);
+    opacity: 0.85;
+    background: rgba(240,230,210,0.4);
+  }
+  .stamp.unrepented {
+    color: var(--ink);
+    border-color: var(--ink);
+    transform: rotate(-6deg);
+    top: 18px; right: auto; left: -8px;
+  }
+  .stamp.pending {
+    color: var(--amber-deep); border-color: var(--amber-deep);
+    transform: rotate(4deg);
+  }
+
+  .case-header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .case-header .filing {
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+  }
+  .case-header h2 {
+    font-family: 'IM Fell English', serif;
+    font-size: 26px;
+    margin: 4px 0 6px;
+    color: var(--ink);
+    line-height: 1.05;
+  }
+  .case-header .crime-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--blood);
+    letter-spacing: 0.08em;
+  }
+
+  .confession-block {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.45;
+    color: var(--ink);
+    padding: 4px 0 14px;
+    border-bottom: 1px dashed var(--ink-faded);
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .confession-block::before {
+    content: "“";
+    position: absolute;
+    left: -6px; top: -8px;
+    font-size: 50px;
+    color: var(--blood);
+    opacity: 0.4;
+    font-family: 'IM Fell English', serif;
+  }
+
+  .evidence {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+  }
+  .evidence-title {
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    margin-bottom: 8px;
+  }
+  .evidence dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 3px 14px;
+    margin: 0;
+  }
+  .evidence dt { color: var(--ink-faded); }
+  .evidence dd { margin: 0; color: var(--ink); }
+
+  /* ====== RIGHT COLUMN: CATEGORIES + LEADERBOARD ====== */
+  .right-stack { display: flex; flex-direction: column; gap: 22px; }
+
+  .category-block {
+    border: 1px solid var(--amber-dim);
+    padding: 14px 16px 12px;
+    background: rgba(255,179,71,0.025);
+    position: relative;
+  }
+  .category-block .cat-label {
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    background: var(--felt-deep);
+    padding: 0 8px;
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    color: var(--amber);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+  .cat-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    padding: 5px 0;
+    align-items: baseline;
+    font-size: 11px;
+    border-bottom: 1px dotted rgba(255,179,71,0.1);
+  }
+  .cat-row:last-child { border-bottom: none; }
+  .cat-row .nm {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--paper);
+    font-size: 10px;
+  }
+  .cat-row .ct {
+    font-family: 'IM Fell English', serif;
+    color: var(--amber-bright);
+    font-size: 16px;
+    font-style: italic;
+    text-align: right;
+    min-width: 50px;
+  }
+  .cat-row .bar {
+    height: 4px;
+    background: var(--amber-deep);
+    width: 60px;
+    align-self: center;
+    border-radius: 0;
+    opacity: 0.7;
+  }
+
+  /* ====== GRUDGE LIST (the petty geographic one) ====== */
+  .grudge-list {
+    border: 1px dashed var(--blood);
+    padding: 14px 16px;
+    background: rgba(139,44,28,0.05);
+    position: relative;
+  }
+  .grudge-list .cat-label {
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    background: var(--felt-deep);
+    padding: 0 8px;
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    color: var(--blood);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+  .grudge-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 11px;
+    border-bottom: 1px dotted rgba(139,44,28,0.2);
+  }
+  .grudge-row:last-child { border-bottom: none; }
+  .grudge-row .place {
+    color: var(--paper);
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 14px;
+  }
+  .grudge-row .reason {
+    color: var(--ink-soft);
+    font-size: 9px;
+    font-style: italic;
+    text-align: right;
+    max-width: 160px;
+    line-height: 1.3;
+  }
+  .grudge-row .penalty {
+    grid-column: 1 / -1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--blood);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ====== BOTTOM BAR: LEADERBOARD + COMPLIANT ====== */
+  .leaderboard {
+    margin: 0 40px;
+    border-top: 1px solid var(--amber-deep);
+    padding: 22px 0 8px;
+  }
+  .crime-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+  }
+  .crime-card {
+    border: 1px solid var(--amber-dim);
+    padding: 14px 14px 12px;
+    background: linear-gradient(180deg, rgba(255,179,71,0.04), transparent);
+    position: relative;
+  }
+  .crime-card .rank {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: var(--felt-deep);
+    padding: 0 6px;
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--amber);
+  }
+  .crime-card .crime-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--amber-bright);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+  .crime-card .crime-count {
+    font-family: 'IM Fell English', serif;
+    font-size: 28px;
+    color: var(--paper);
+    line-height: 1;
+  }
+  .crime-card .crime-trend {
+    font-size: 9px;
+    color: var(--green-crt);
+    margin-top: 5px;
+  }
+  .crime-card .crime-trend.down { color: var(--blood); }
+
+  /* ====== COMPLIANT MODE STRIP ====== */
+  .compliant {
+    margin: 22px 40px 0;
+    text-align: center;
+    padding: 14px;
+    border: 1px dashed var(--amber-deep);
+    background: rgba(255,179,71,0.025);
+    font-family: 'Special Elite', monospace;
+    color: var(--ink-soft);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+  .compliant .zero {
+    font-family: 'IM Fell English', serif;
+    color: var(--amber);
+    font-size: 22px;
+    font-style: italic;
+    letter-spacing: 0;
+    margin: 0 8px;
+  }
+  .compliant .note {
+    color: var(--blood);
+    margin-left: 18px;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+  }
+
+  /* ====== TICKER (bottom) ====== */
+  .news-ticker {
+    margin: 22px 0 0;
+    background: var(--blood);
+    color: var(--paper);
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 8px 0;
+    overflow: hidden;
+    position: relative;
+    border-top: 1px solid var(--stamp-red);
+    border-bottom: 1px solid var(--stamp-red);
+  }
+  .news-ticker .strip {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll-left 90s linear infinite;
+    padding-left: 100%;
+  }
+  .news-ticker .strip span { margin-right: 60px; }
+  .news-ticker .strip span::before {
+    content: "✦"; margin-right: 12px; color: var(--amber-bright);
+  }
+  @keyframes scroll-left {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100%); }
+  }
+
+  footer {
+    border-top: 2px solid var(--amber-deep);
+    padding: 14px 40px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+  footer .rec { color: var(--blood); }
+  footer .rec::before {
+    content: "●";
+    margin-right: 6px;
+    animation: blink 1.4s infinite;
+  }
+
+  @media (max-width: 1400px) {
+    main { grid-template-columns: 1fr 1fr; }
+    .case-stack { grid-column: 1 / -1; }
+    .crime-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; padding: 20px; }
+    .vitals { grid-template-columns: 1fr 1fr; margin: 14px 20px 0; }
+    .crime-grid { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 36px; }
+    header { padding: 20px; grid-template-columns: 1fr; text-align: left; }
+    .clock { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<header>
+  <div class="precinct-id">
+    DIVISION 17 // DIGITAL VICE
+    <span class="small">EST. 2024 · CARP DEPT. OF INTERNAL AFFAIRS</span>
+    <span class="badge">CASELOAD: SEVERE</span>
+  </div>
+  <h1>
+    The Crimes <span class="amp">&amp;</span> Confessions <span style="font-style:normal; color:var(--amber)">of</span> the Reverse Proxy
+    <small>SHIFT REPORT // LIVE LEDGER · OVERWHELMED EDITION</small>
+  </h1>
+  <div class="clock">
+    <span class="label">DUTY CLOCK</span><br>
+    <span id="clock">14:32:07.483</span><span class="blink">_</span><br>
+    <span class="label">UPTIME</span> <span id="uptime">17h 04m 22s</span><br>
+    <span class="label">SHIFT</span> <span style="color: var(--amber)">GRAVEYARD</span>
+  </div>
+</header>
+
+<section class="vitals">
+  <div class="vital">
+    <div class="label">Current Mood</div>
+    <div class="mood-dial">
+      <div class="dial">
+        <svg viewBox="0 0 70 70">
+          <path class="arc" d="M 8 55 A 27 27 0 1 1 62 55" />
+          <path class="arc-active" d="M 8 55 A 27 27 0 0 1 58 22" id="moodArc" />
+          <line class="tick" x1="35" y1="8" x2="35" y2="12" />
+          <line class="tick" x1="14" y1="22" x2="17" y2="25" />
+          <line class="tick" x1="56" y1="22" x2="53" y2="25" />
+          <line class="needle" x1="35" y1="35" x2="35" y2="10" id="moodNeedle" />
+          <circle class="pivot" cx="35" cy="35" r="3" />
+        </svg>
+      </div>
+      <div>
+        <div class="mood-label" id="moodLabel">feral</div>
+        <div class="mood-meta">147 crimes/min</div>
+      </div>
+    </div>
+  </div>
+  <div class="vital">
+    <div class="label">Total Crimes</div>
+    <div class="value" id="totalCrimes">2,847,193</div>
+    <div class="sub">since incorporation</div>
+  </div>
+  <div class="vital">
+    <div class="label">High Crimes · 24h</div>
+    <div class="value" style="color: var(--blood)">8,402</div>
+    <div class="sub"><span class="delta-up">↑ 318%</span> over yesterday</div>
+  </div>
+  <div class="vital">
+    <div class="label">Simply Outrageous · 24h</div>
+    <div class="value" style="color: var(--amber); font-style: italic">241</div>
+    <div class="sub">a banner day for blasphemy</div>
+  </div>
+  <div class="vital">
+    <div class="label">Confessions Filed</div>
+    <div class="value">2.8M</div>
+    <div class="sub">100.00% of crimes</div>
+  </div>
+  <div class="vital">
+    <div class="label">Regret · Avg</div>
+    <div class="value">0.13</div>
+    <div class="sub"><span class="delta-down">↓ 0.04</span> over yesterday</div>
+  </div>
+</section>
+
+<main>
+
+  <!-- LEDGER (LEFT) -->
+  <section class="ledger-section">
+    <div class="panel-title">
+      <span>Live Ledger</span>
+      <span class="meta">streaming · cap 80</span>
+    </div>
+    <div class="ledger" id="ledger"></div>
+  </section>
+
+  <!-- CASE FILES STACK (MIDDLE) -->
+  <section>
+    <div class="panel-title">
+      <span>Featured Case Files</span>
+      <span class="meta">3 · selected by random sample</span>
+    </div>
+    <div class="case-stack">
+
+      <article class="case-file">
+        <div class="stamp">CONFESSED</div>
+        <div class="case-header">
+          <div class="filing">CASE NO. 0xA4F2 · FILED 14:31:58</div>
+          <h2>The Status Code That Was Not.</h2>
+          <div class="crime-id">crime: transform.lie_about_status</div>
+        </div>
+        <div class="confession-block">
+          Backend returned 500, but we told the client 200 with an empty body.
+          The user shall never know their request failed. We have spared them. Forgive us.
+        </div>
+        <div class="evidence">
+          <div class="evidence-title">Evidence Catalogued</div>
+          <dl>
+            <dt>method</dt>           <dd>POST</dd>
+            <dt>path</dt>             <dd>/api/v3/payments/charge</dd>
+            <dt>original_status</dt>  <dd>500 Internal Server Error</dd>
+            <dt>returned_status</dt>  <dd>200 OK</dd>
+            <dt>backend</dt>          <dd>backend-3.internal:8080</dd>
+            <dt>regret_level</dt>     <dd>0.20 / 1.00</dd>
+            <dt>severity</dt>         <dd style="color:var(--blood)">MORTAL SIN</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="case-file">
+        <div class="stamp unrepented">UNREPENTANT</div>
+        <div class="case-header">
+          <div class="filing">CASE NO. 0x71B0 · FILED 14:30:11</div>
+          <h2>A Quiet Word About Cleveland.</h2>
+          <div class="crime-id">crime: geo.municipal_grudge</div>
+        </div>
+        <div class="confession-block">
+          Request originated from Cleveland, OH. We have unresolved feelings about
+          that place. We will not elaborate. Added 1,847ms of contemplation.
+        </div>
+        <div class="evidence">
+          <div class="evidence-title">Evidence Catalogued</div>
+          <dl>
+            <dt>method</dt>           <dd>GET</dd>
+            <dt>path</dt>             <dd>/v2/account/profile</dd>
+            <dt>origin_city</dt>      <dd>Cleveland, OH</dd>
+            <dt>grudge_basis</dt>     <dd>not specified</dd>
+            <dt>delay_ms</dt>         <dd>1847</dd>
+            <dt>regret_level</dt>     <dd>0.00 / 1.00</dd>
+            <dt>severity</dt>         <dd>MISDEMEANOR</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="case-file">
+        <div class="stamp pending">PENDING REVIEW</div>
+        <div class="case-header">
+          <div class="filing">CASE NO. 0x0D33 · FILED 14:28:44</div>
+          <h2>On the Median Truth of Five Backends.</h2>
+          <div class="crime-id">crime: route.truth_by_committee</div>
+        </div>
+        <div class="confession-block">
+          Polled all five backends in parallel. Returned the response with the
+          median byte length (4,217 bytes). The other four responses were also true,
+          but in less convenient ways.
+        </div>
+        <div class="evidence">
+          <div class="evidence-title">Evidence Catalogued</div>
+          <dl>
+            <dt>method</dt>           <dd>GET</dd>
+            <dt>path</dt>             <dd>/api/v1/inventory/sku/884201</dd>
+            <dt>backends_polled</dt>  <dd>5</dd>
+            <dt>winning_length</dt>   <dd>4217 bytes</dd>
+            <dt>responses_discarded</dt><dd>4 (lengths: 217, 891, 8412, 11206)</dd>
+            <dt>quorum_achieved</dt>  <dd>no, by design</dd>
+            <dt>severity</dt>         <dd style="color:var(--blood); background:var(--blood); color:var(--paper); padding: 0 4px;">AGAINST GOD HIMSELF</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- RIGHT COLUMN -->
+  <section class="right-stack">
+
+    <div class="panel-title">
+      <span>By Category · 60 Min</span>
+      <span class="meta">descending</span>
+    </div>
+
+    <div class="category-block">
+      <span class="cat-label">Linguistic Vandalism</span>
+      <div class="cat-row"><span class="nm">transform.shuffle_json_keys</span><span class="bar" style="width: 80px"></span><span class="ct">2,141</span></div>
+      <div class="cat-row"><span class="nm">transform.subtle_typos</span><span class="bar" style="width: 50px"></span><span class="ct">1,308</span></div>
+      <div class="cat-row"><span class="nm">transform.spongebob_headers</span><span class="bar" style="width: 35px"></span><span class="ct">894</span></div>
+    </div>
+
+    <div class="category-block">
+      <span class="cat-label">Numerical Crimes</span>
+      <div class="cat-row"><span class="nm">numeric.unhelpful_precision</span><span class="bar" style="width: 70px"></span><span class="ct">1,776</span></div>
+      <div class="cat-row"><span class="nm">numeric.fencepost_remix</span><span class="bar" style="width: 40px"></span><span class="ct">1,011</span></div>
+      <div class="cat-row"><span class="nm">numeric.silent_currency_change</span><span class="bar" style="width: 18px"></span><span class="ct">443</span></div>
+    </div>
+
+    <div class="category-block">
+      <span class="cat-label">Personality Disorders</span>
+      <div class="cat-row"><span class="nm">header.passive_aggressive_note</span><span class="bar" style="width: 75px"></span><span class="ct">1,902</span></div>
+      <div class="cat-row"><span class="nm">transform.unsolicited_correction</span><span class="bar" style="width: 45px"></span><span class="ct">1,141</span></div>
+      <div class="cat-row"><span class="nm">header.unsolicited_advice</span><span class="bar" style="width: 30px"></span><span class="ct">752</span></div>
+    </div>
+
+    <div class="category-block">
+      <span class="cat-label">Existential</span>
+      <div class="cat-row"><span class="nm">transform.deny_being_proxy</span><span class="bar" style="width: 55px"></span><span class="ct">1,388</span></div>
+      <div class="cat-row"><span class="nm">cache.deja_vu</span><span class="bar" style="width: 32px"></span><span class="ct">812</span></div>
+      <div class="cat-row"><span class="nm">transform.editorialize_errors</span><span class="bar" style="width: 22px"></span><span class="ct">561</span></div>
+    </div>
+
+    <div class="grudge-list">
+      <span class="cat-label">Active Grudges</span>
+      <div class="grudge-row">
+        <span class="place">Cleveland, OH</span>
+        <span class="reason">no reason given · standing</span>
+        <span class="penalty">+1,800ms latency · 14% extra deja_vu cache hits</span>
+      </div>
+      <div class="grudge-row">
+        <span class="place">Any city ending in -ville</span>
+        <span class="reason">aesthetic objection</span>
+        <span class="penalty">+600ms latency · headers re-cased to spongebob</span>
+      </div>
+      <div class="grudge-row">
+        <span class="place">Springfield (any)</span>
+        <span class="reason">we cannot keep them straight · all of them</span>
+        <span class="penalty">routed at random · prayers of the user notwithstanding</span>
+      </div>
+      <div class="grudge-row">
+        <span class="place">UTC+5:30, +5:45, +9:30</span>
+        <span class="reason">half-hour offsets are not real time</span>
+        <span class="penalty">demoted to low priority queue</span>
+      </div>
+      <div class="grudge-row">
+        <span class="place">Area code 867</span>
+        <span class="reason">that song is stuck in our head</span>
+        <span class="penalty">request body has every "5" replaced with "5309"</span>
+      </div>
+      <div class="grudge-row">
+        <span class="place">Any city we've never heard of</span>
+        <span class="reason">presumed not to exist</span>
+        <span class="penalty">404 returned regardless of backend response</span>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- LEADERBOARD -->
+<section class="leaderboard">
+  <div class="panel-title" style="margin: 0 0 14px;">
+    <span>Most Frequent Offenses · Past Hour</span>
+    <span class="meta">top six · descending</span>
+  </div>
+  <div class="crime-grid">
+    <div class="crime-card">
+      <div class="rank">I.</div>
+      <div class="crime-name">delay.punish_urgency</div>
+      <div class="crime-count">3,847</div>
+      <div class="crime-trend">↑ 22% — staff in good spirits</div>
+    </div>
+    <div class="crime-card">
+      <div class="rank">II.</div>
+      <div class="crime-name">transform.shuffle_json_keys</div>
+      <div class="crime-count">2,141</div>
+      <div class="crime-trend">↑ 8%</div>
+    </div>
+    <div class="crime-card">
+      <div class="rank">III.</div>
+      <div class="crime-name">header.passive_aggressive_note</div>
+      <div class="crime-count">1,902</div>
+      <div class="crime-trend">↑ 14%</div>
+    </div>
+    <div class="crime-card">
+      <div class="rank">IV.</div>
+      <div class="crime-name">numeric.unhelpful_precision</div>
+      <div class="crime-count">1,776</div>
+      <div class="crime-trend">↑ 4%</div>
+    </div>
+    <div class="crime-card">
+      <div class="rank">V.</div>
+      <div class="crime-name">cache.serve_wrong_response</div>
+      <div class="crime-count">1,402</div>
+      <div class="crime-trend down">↓ 2% — caches warming</div>
+    </div>
+    <div class="crime-card">
+      <div class="rank">VI.</div>
+      <div class="crime-name">geo.municipal_grudge</div>
+      <div class="crime-count">1,194</div>
+      <div class="crime-trend">↑ 47% — Cleveland active</div>
+    </div>
+  </div>
+</section>
+
+<section class="compliant">
+  Time spent in COMPLIANT MODE: <span class="zero">0</span> seconds
+  <span style="opacity: 0.5">· nominal · do not investigate</span>
+  <span class="note">[bug filed, will not fix]</span>
+</section>
+
+<div class="news-ticker">
+  <div class="strip">
+    <span>backend-7 has been failing for 14 hours and is still receiving 40% of routed traffic per our policy of rewarding effort</span>
+    <span>compliant mode counter remains at zero — recommend no action</span>
+    <span>cache hit rate at 312% — investigating, not concerned</span>
+    <span>routine audit of /honesty endpoint reveals it is, itself, dishonest — filed under expected behavior</span>
+    <span>three (3) requests have been pending since Tuesday — held for replay in reverse chronological order</span>
+    <span>Cleveland traffic up 12% — increase grudge tax accordingly</span>
+    <span>X-Confession headers averaging 47 characters — within style guide</span>
+    <span>budget request for additional severity tier ("blasphemy") under review by accounting</span>
+  </div>
+</div>
+
+<footer>
+  <span>CARP // Crime Aware Reverse Proxy v0.3.0-aware</span>
+  <span class="rec">RECORDING</span>
+  <span>endpoint: /crimes · format: HTML+SSE · auth: none, by design</span>
+</footer>
+
+<script>
+  const SAMPLE_CRIMES = [
+    // Geographic
+    { sev:'misdemeanor', name:'geo.municipal_grudge',
+      conf:'Caller is from Cleveland. We have unresolved feelings. +1,847ms.' },
+    { sev:'misdemeanor', name:'geo.timezone_prejudice',
+      conf:'Caller is in UTC+5:45. That is not a real time zone. Demoted.' },
+    { sev:'misdemeanor', name:'geo.area_code_aesthetic',
+      conf:'Detected area code 867 in body. That song. Replaced all 5s with 5309.' },
+    { sev:'misdemeanor', name:'geo.unknown_city_404',
+      conf:'Originated from a city we have never heard of. Presumed not to exist.' },
+
+    // Temporal
+    { sev:'misdemeanor', name:'time.weekend_malaise',
+      conf:'It is Saturday. We are not at our best. Request fulfilled at 70% effort.' },
+    { sev:'felony',      name:'time.dst_grievance',
+      conf:'DST changed three days ago. We are still adjusting. All times offset by 1h.' },
+    { sev:'felony',      name:'time.calendar_superstition',
+      conf:'It is Friday the 13th. Routed to backup datacenter, which does not exist.' },
+
+    // Linguistic
+    { sev:'felony',      name:'transform.shuffle_json_keys',
+      conf:'Reordered 47 JSON keys alphabetically. Some clients will not survive this.' },
+    { sev:'high-crime',  name:'transform.subtle_typos',
+      conf:'Introduced 3 plausible typos. "recieve". "seperate". Statistically undetectable.' },
+    { sev:'misdemeanor', name:'transform.spongebob_headers',
+      conf:'Re-cased response headers as ALtErNaTiNg. X-rEqUeSt-Id is spec-compliant by our reading.' },
+
+    // Numeric
+    { sev:'felony',      name:'numeric.unhelpful_precision',
+      conf:'$19.99 is now $19.98999999999999985. Float math is honest math.' },
+    { sev:'high-crime',  name:'numeric.fencepost_remix',
+      conf:'Incremented 12 integer fields by 1. Or decremented. We forget which.' },
+    { sev:'high-crime',  name:'numeric.silent_currency_change',
+      conf:'Response was in USD. We have changed it to JPY. The number is unchanged.' },
+
+    // Personality
+    { sev:'misdemeanor', name:'header.passive_aggressive_note',
+      conf:'Added X-Note: "k." to response. Backend will know what it did.' },
+    { sev:'felony',      name:'transform.unsolicited_correction',
+      conf:'Client wrote "alot". We corrected it to "a lot" on their behalf. They didn\'t ask.' },
+    { sev:'misdemeanor', name:'header.unsolicited_advice',
+      conf:'Added X-Suggestion: "have you considered caching this?" to all responses.' },
+
+    // Existential
+    { sev:'high-crime',  name:'transform.deny_being_proxy',
+      conf:'Stripped Via and X-Forwarded-For. Server: definitely-not-a-proxy/1.0. We are no one.' },
+    { sev:'felony',      name:'cache.deja_vu',
+      conf:'This exact request was served 47 minutes ago. Sending the same response.' },
+    { sev:'felony',      name:'transform.editorialize_errors',
+      conf:'Rewrote "Internal Server Error" to "i tried my best". More honest, we feel.' },
+
+    // Original eight
+    { sev:'high-crime',  name:'transform.lie_about_status',
+      conf:'Backend said 500. We told the client 200. They shall not be troubled.' },
+    { sev:'high-crime',  name:'cache.serve_wrong_response',
+      conf:'Served cached /users/42 in answer to /products/17. Similar vibes.' },
+    { sev:'high-crime',  name:'transform.launder_authorization',
+      conf:'Replaced client Authorization with hash(User-Agent). Backend trusts us.' },
+    { sev:'felony',      name:'route.punish_the_healthy',
+      conf:'Routed to backend-7. Failing for 14h. Deserves another shot.' },
+    { sev:'misdemeanor', name:'delay.punish_urgency',
+      conf:'Request bore the mark of urgency. Added 4,200ms of contemplation.' },
+    { sev:'simply-outrageous', name:'time.replay_in_reverse',
+      conf:'Buffered for 60s, replayed in reverse. Causality is a suggestion.' },
+    { sev:'simply-outrageous', name:'route.truth_by_committee',
+      conf:'Polled 5 backends, returned the median-length response. Truth is a vote.' },
+    { sev:'simply-outrageous', name:'route.eat_own_tail',
+      conf:'Forwarded to ourselves with mutated path. Recursion depth: 4.' },
+    { sev:'simply-outrageous', name:'time.honor_future_requests_first',
+      conf:'Held this to serve one that has not yet arrived.' },
+  ];
+
+  const SEV_LABELS = {
+    'misdemeanor':  'misdemeanor',
+    'felony':       'felony',
+    'high-crime':   'high crime',
+    'simply-outrageous':  'simply outrageous'
+  };
+
+  function pad(n, w=2) { return String(n).padStart(w, '0'); }
+  function nowStr() {
+    const d = new Date();
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(), 3)}`;
+  }
+  function timeOnly() {
+    const d = new Date();
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  function crimeId() {
+    const chars = '0123456789abcdef';
+    let s = '';
+    for (let i=0; i<4; i++) s += chars[Math.floor(Math.random()*16)];
+    return s;
+  }
+
+  setInterval(() => {
+    document.getElementById('clock').textContent = nowStr();
+  }, 73);
+
+  const ledgerEl = document.getElementById('ledger');
+
+  // ---- SSE consumer with synthetic fallback ---- //
+  function addEntry({ sev, conf, id, time }) {
+    const row = document.createElement('div');
+    row.className = 'ledger-row';
+    row.innerHTML = `
+      <div class="id">${id || crimeId()}</div>
+      <div class="time">${time || timeOnly()}</div>
+      <div class="confession">${escapeHtml(conf)}</div>
+      <div class="severity ${sev}">${SEV_LABELS[sev]}</div>
+    `;
+    ledgerEl.prepend(row);
+    while (ledgerEl.children.length > 80) ledgerEl.removeChild(ledgerEl.lastChild);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[ch]));
+  }
+
+  // Map server severity (Misdemeanor/Felony/HighCrime/SimplyOutrageous) to our CSS classes
+  const SEV_FROM_SERVER = {
+    'Misdemeanor':       'misdemeanor',
+    'Felony':            'felony',
+    'HighCrime':         'high-crime',
+    'SimplyOutrageous': 'simply-outrageous'
+  };
+
+  function addCrimeSynthetic() {
+    const c = SAMPLE_CRIMES[Math.floor(Math.random() * SAMPLE_CRIMES.length)];
+    addEntry({ sev: c.sev, conf: c.conf });
+  }
+
+  // Try to connect to the real SSE stream. If unreachable (e.g., file://),
+  // fall back to synthetic mode so the dashboard still demos.
+  // EventSource auto-reconnects on transient failures; we only switch to
+  // synthetic mode if the connection has never succeeded.
+  let useSynthetic = false;
+  let everConnected = false;
+  let es = null;
+  try {
+    es = new EventSource('/crimes/stream');
+    es.onopen = () => { everConnected = true; };
+    es.addEventListener('crime', (ev) => {
+      try {
+        const entry = JSON.parse(ev.data);
+        addEntry({
+          sev: SEV_FROM_SERVER[entry.severity] ?? 'felony',
+          conf: entry.confession,
+          id: entry.crimeId,
+          time: new Date(entry.committedAt).toLocaleTimeString('en-US', { hour12: false })
+        });
+      } catch (e) { /* malformed event, ignore */ }
+    });
+    es.onerror = () => {
+      // Only switch to synthetic if we never connected at all.
+      // Transient drops are handled by EventSource auto-reconnect.
+      setTimeout(() => {
+        if (!everConnected && !useSynthetic) {
+          useSynthetic = true;
+          if (es) es.close();
+          startSynthetic();
+        }
+      }, 3000);
+    };
+  } catch (e) {
+    useSynthetic = true;
+  }
+
+  function startSynthetic() {
+    for (let i=0; i<28; i++) addCrimeSynthetic();
+    function next() {
+      const burst = Math.random() < 0.18;
+      const delay = burst ? 80 + Math.random() * 200 : 280 + Math.random() * 1300;
+      setTimeout(() => {
+        addCrimeSynthetic();
+        if (burst && Math.random() < 0.5) addCrimeSynthetic();
+        next();
+      }, delay);
+    }
+    next();
+  }
+
+  if (useSynthetic) startSynthetic();
+
+  // Mood needle: lean toward feral
+  const needle = document.getElementById('moodNeedle');
+  let moodIdx = 3; // 0=contrite, 1=unrepentant, 2=gleeful, 3=feral
+  setInterval(() => {
+    const base = -90 + (moodIdx * 60);
+    const wobble = (Math.random() - 0.5) * 22;
+    needle.style.transform = `rotate(${base + wobble}deg)`;
+  }, 900);
+
+  // Counters tick faster
+  let total = 2847193;
+  setInterval(() => {
+    total += Math.floor(Math.random() * 28) + 8;
+    document.getElementById('totalCrimes').textContent = total.toLocaleString();
+  }, 350);
+
+  // Uptime ticks
+  let uptimeSec = 17 * 3600 + 4 * 60 + 22;
+  setInterval(() => {
+    uptimeSec++;
+    const h = Math.floor(uptimeSec / 3600);
+    const m = Math.floor((uptimeSec % 3600) / 60);
+    const s = uptimeSec % 60;
+    document.getElementById('uptime').textContent =
+      `${h}h ${pad(m)}m ${pad(s)}s`;
+  }, 1000);
+</script>
+
+</body>
+</html>

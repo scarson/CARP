@@ -1,0 +1,44 @@
+# Sample dnsmasq configuration for the YARP Crimes captive portal demo.
+#
+# This shows how a network operator would advertise the proxy as a captive
+# portal via DHCP option 114 (RFC 8910). Modern OSes (iOS, Android, macOS,
+# recent Linux) will automatically open the captive portal when they see
+# this option in their DHCP lease.
+#
+# To use:
+#   1. Run YARP Crimes on a host reachable from the network — say, 10.0.0.10.
+#   2. Run dnsmasq with this config on the network's gateway.
+#   3. Connect a phone or laptop to the network.
+#   4. Watch the OS pop a "Sign in to network" notification.
+#   5. Tapping it opens /captive/portal — which is the precinct's terms of service.
+#
+# This is the demo we couldn't fully provide in the project itself, because
+# DHCP is L3 and the proxy is L7. They cooperate via this option.
+
+# Basic DHCP range — adjust for your network
+dhcp-range=10.0.0.100,10.0.0.200,12h
+
+# DHCPv4 option 114 — Captive-Portal Identification (RFC 8910).
+# The URL is the RFC 8908 API endpoint. Clients hit this, see captive=true,
+# and open the user-portal-url returned in the JSON.
+dhcp-option=114,"http://10.0.0.10:5050/captive/api/session"
+
+# DHCPv6 option 103 — same purpose, IPv6 flavor
+dhcp-option=option6:103,"http://10.0.0.10:5050/captive/api/session"
+
+# Optional: also serve as a recursive DNS resolver, so connectivity probes
+# (captive.apple.com, connectivitycheck.gstatic.com, msftconnecttest.com)
+# resolve to the proxy. With this in place, even Windows clients (which
+# don't honor option 114) will get redirected when their probe hits the
+# proxy and gets a 302 to /captive/portal.
+#
+# Map all the well-known probe hostnames to the proxy.
+address=/captive.apple.com/10.0.0.10
+address=/connectivitycheck.gstatic.com/10.0.0.10
+address=/connectivitycheck.android.com/10.0.0.10
+address=/clients3.google.com/10.0.0.10
+address=/www.msftconnecttest.com/10.0.0.10
+address=/www.msftncsi.com/10.0.0.10
+address=/detectportal.firefox.com/10.0.0.10
+address=/network-test.debian.org/10.0.0.10
+address=/nmcheck.gnome.org/10.0.0.10
