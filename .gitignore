@@ -59,3 +59,6 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Git worktrees — see docs/git-strategy.md
+.claude/worktrees/
